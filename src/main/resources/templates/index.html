@@ -1,75 +1,81 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>To-Do App</title>
+    <meta charset="UTF-8">
+    <title>Todo Application</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
-            display: flex;
-            justify-content: center;
-            padding-top: 50px;
+            max-width: 750px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f4f6f9;
         }
-        .todo-container {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            width: 400px;
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+
+        h1 { color: #243b53; }
+
+        form { margin: 10px 0; }
+
         input[type="text"] {
-            padding: 10px;
-            width: 80%;
-            margin-right: 10px;
+            padding: 9px;
             border: 1px solid #ccc;
-            border-radius: 6px;
+            border-radius: 4px;
         }
+
         button {
-            padding: 10px;
-            background-color: #28a745;
-            color: white;
+            padding: 9px 12px;
             border: none;
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
+            background: #2563eb;
+            color: white;
         }
-        ul {
-            list-style-type: none;
-            padding: 0;
-            margin-top: 20px;
-        }
-        li {
-            padding: 10px;
-            margin-bottom: 10px;
-            background: #f0f0f0;
-            border-radius: 6px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .delete-button {
-            background-color: #dc3545;
-        }
+
+        .delete { background: #dc2626; }
+        .todo { background: white; padding: 12px; margin: 12px 0;
+                border-radius: 6px; }
+        .completed { text-decoration: line-through; color: gray; }
     </style>
 </head>
 <body>
-<div class="todo-container">
-    <h2>My To-Do List</h2>
-    <form method="post" action="/webapp/add">
-        <input type="text" name="description" placeholder="New task..." required/>
-        <button type="submit">Add</button>
+
+<h1>My Todo Application</h1>
+
+<form th:action="@{/webapp/add}" method="post">
+    <input type="text" name="description"
+           placeholder="Enter a new task" required maxlength="200">
+    <button type="submit">Add Todo</button>
+</form>
+
+<p th:if="${#lists.isEmpty(todos)}">No todos yet. Add your first task!</p>
+
+<div class="todo" th:each="todo : ${todos}">
+    <span th:text="${todo.description}"
+          th:classappend="${todo.completed} ? 'completed' : ''">
+        Todo description
+    </span>
+
+    <form th:action="@{/webapp/toggle}" method="post">
+        <input type="hidden" name="id" th:value="${todo.id}">
+        <button type="submit"
+                th:text="${todo.completed} ? 'Mark Pending' : 'Complete'">
+            Complete
+        </button>
     </form>
-    <ul>
-        <li th:each="todo : ${todos}">
-            <span th:text="${todo.description}"></span>
-            <form method="post" action="/webapp/delete" th:object="${todo}">
-                <input type="hidden" name="id" th:value="${todo.id}" />
-                <button class="delete-button" type="submit">Delete</button>
-            </form>
-        </li>
-    </ul>
+
+    <form th:action="@{/webapp/update}" method="post">
+        <input type="hidden" name="id" th:value="${todo.id}">
+        <input type="text" name="description"
+               th:value="${todo.description}" required maxlength="200">
+        <button type="submit">Update</button>
+    </form>
+
+    <form th:action="@{/webapp/delete}" method="post">
+        <input type="hidden" name="id" th:value="${todo.id}">
+        <button type="submit" class="delete">Delete</button>
+    </form>
 </div>
+
 </body>
 </html>
