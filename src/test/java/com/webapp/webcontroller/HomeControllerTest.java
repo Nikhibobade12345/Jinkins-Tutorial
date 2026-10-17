@@ -1,3 +1,4 @@
+
 package com.webapp.webcontroller;
 
 import com.webapp.model.TodoItem;
@@ -25,11 +26,12 @@ class HomeControllerTest {
     private TodoService todoService;
 
     @Test
-    void testIndex_shouldReturnIndexViewWithTodos() throws Exception {
+    void testIndexShouldReturnIndexViewWithTodos() throws Exception {
         List<TodoItem> mockTodos = List.of(
                 new TodoItem("1", "Learn Jenkins"),
                 new TodoItem("2", "Build Spring Boot App")
         );
+
         when(todoService.getAllTodos()).thenReturn(mockTodos);
 
         mockMvc.perform(get("/webapp/index-data"))
@@ -42,22 +44,77 @@ class HomeControllerTest {
     }
 
     @Test
-    void testAddTodo_shouldCallServiceAndRedirect() throws Exception {
+    void testAddTodoShouldCallServiceAndRedirect() throws Exception {
         mockMvc.perform(post("/webapp/add")
                         .param("description", "Test Jenkins Pipeline"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/webapp/index-data"));
 
-        verify(todoService, times(1)).addTodo("Test Jenkins Pipeline");
+        verify(todoService).addTodo("Test Jenkins Pipeline");
     }
 
     @Test
-    void testDeleteTodo_shouldCallServiceAndRedirect() throws Exception {
-        mockMvc.perform(post("/webapp/delete")
-                        .param("id", "sample-uuid-123"))
+    void testUpdateTodoShouldCallServiceAndRedirect() throws Exception {
+        mockMvc.perform(post("/webapp/update")
+                        .param("id", "todo-123")
+                        .param("description", "Updated Jenkins Pipeline"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/webapp/index-data"));
 
-        verify(todoService, times(1)).deleteTodo("sample-uuid-123");
+        verify(todoService).updateTodo(
+                "todo-123",
+                "Updated Jenkins Pipeline"
+        );
+    }
+
+    @Test
+    void testToggleTodoShouldCallServiceAndRedirect() throws Exception {
+        mockMvc.perform(post("/webapp/toggle")
+                        .param("id", "todo-123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/webapp/index-data"));
+
+        verify(todoService).toggleTodo("todo-123");
+    }
+
+    @Test
+    void testDeleteTodoShouldCallServiceAndRedirect() throws Exception {
+        mockMvc.perform(post("/webapp/delete")
+                        .param("id", "todo-123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/webapp/index-data"));
+
+        verify(todoService).deleteTodo("todo-123");
+    }
+
+    @Test
+    void testAddTodoWithoutDescriptionShouldReturnBadRequest()
+            throws Exception {
+
+        mockMvc.perform(post("/webapp/add"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(todoService);
+    }
+
+    @Test
+    void testUpdateTodoWithoutIdShouldReturnBadRequest()
+            throws Exception {
+
+        mockMvc.perform(post("/webapp/update")
+                        .param("description", "Updated task"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(todoService);
+    }
+
+    @Test
+    void testToggleTodoWithoutIdShouldReturnBadRequest()
+            throws Exception {
+
+        mockMvc.perform(post("/webapp/toggle"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(todoService);
     }
 }
