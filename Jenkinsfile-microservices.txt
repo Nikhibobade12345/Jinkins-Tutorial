@@ -1,0 +1,48 @@
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out microservices project from GitHub'
+            }
+        }
+
+        stage('Build API Gateway') {
+            steps {
+                bat 'mvnw.cmd -B -f api-gateway/pom.xml clean verify'
+            }
+        }
+
+        stage('Build Order Service') {
+            steps {
+                bat 'mvnw.cmd -B -f order-service/pom.xml clean verify'
+            }
+        }
+
+        stage('Build Notification Service') {
+            steps {
+                bat 'mvnw.cmd -B -f notification-service/pom.xml clean verify'
+            }
+        }
+    }
+
+    post {
+        always {
+            junit testResults: '**/target/surefire-reports/TEST-*.xml',
+                  allowEmptyResults: true
+
+            archiveArtifacts artifacts: '**/target/*.jar',
+                             allowEmptyArchive: true
+        }
+
+        success {
+            echo 'All microservices built and verified successfully!'
+        }
+
+        failure {
+            echo 'Build failed. Check the Jenkins Console Output.'
+        }
+    }
+}
