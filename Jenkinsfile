@@ -20,12 +20,19 @@ pipeline {
     }
 
     post {
+        always {
+            junit(
+                testResults: 'target/surefire-reports/TEST-*.xml',
+                allowEmptyResults: true
+            )
+        }
+
         success {
-            echo 'SUCCESS: Spring Boot application built and tested!'
+            echo 'SUCCESS: Build, tests and report publishing completed!'
         }
 
         failure {
-            echo 'FAILED: Check the Console Output for errors.'
+            echo 'FAILED: Check Console Output and the available test reports.'
         }
     }
 }
